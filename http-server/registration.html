@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Registration Form</title>
+	<style>
+	.container {
+		display:block;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		height: 100vh;
+		text-align: center;
+	}
+
+	form {
+		max-width: 500px;
+		padding: 30px;
+		border: 2px solid black;
+		border-radius: 5px;
+		box-shadow: 5px 5px 5px gray;
+		display: inline-block;
+	}
+
+	table {
+		border-collapse: collapse;
+		width: 100%;
+		max-width: none;
+	}
+
+	th,
+	td {
+		border: 1px solid #ddd;
+		padding: 8px;
+		text-align: left;
+	}
+
+	th {
+		background-color: #f2f2f2;
+		font-weight: bold;
+	}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<h1>Registration Form</h1>
+		<form id="registration-form">
+
+		    <label for="name">Name:</label>
+		    <input type="text" id="name" required><br><br>
+
+		    <label for="email">Email:</label>
+		    <input type="email" id="email" required><br><br>
+
+		    <label for="password">Password:</label>
+		    <input type="password" id="password" required><br><br>
+
+		    <label for="dob">Date of Birth:</label>
+		    <input type="date" id="dob" required><br><br>
+
+	        <input type="checkbox" id="checkbox" required>
+		    <label for="checkbox">Accept terms and conditions:</label><br><br>
+		
+		    <button type="submit">Submit</button>
+	    </form>
+
+		<h2>User Details</h2>
+		<table id="user-table">
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>Email</th>
+					<th>Password</th>
+					<th>Dob</th>
+					<th>Accepted terms?</th>
+				</tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>
+	</div>
+    <script src="./registration.js"></script>
+</body>
+</html>
