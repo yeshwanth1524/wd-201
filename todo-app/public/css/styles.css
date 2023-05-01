@@ -1,0 +1,44 @@
+body {
+  font-family: "Courier New", Courier, monospace;
+  margin: 0;
+  padding: 0;
+}
+
+/* Header styles */
+header {
+  background-color: #333;
+  color: gray;
+  padding: 1em;
+}
+
+header h1 {
+  margin: 0;
+}
+
+/* Table styles */
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+th {
+  background-color: #4CAF50;
+  color: gray;
+}
+
+tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+/* Footer styles */
+footer {
+  background-color: #333;
+  color: gray;
+  padding: 1em;
+}
