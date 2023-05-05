@@ -8,6 +8,19 @@ app.use(bodyParser.json());
 app.set("view engine", "ejs");
 
 app.get("/", async (request, response) => {
+  const overdueItems = await Todo.overdue();
+  const dueTodayItems = await Todo.dueToday();
+  const dueLaterItems = await Todo.dueLater();
+  response.render("index", {
+    title: "Todo application",
+    overdueItems,
+    dueTodayItems,
+    dueLaterItems,
+  });
+});
+
+
+app.get("/", async (request, response) => {
   const allTodos = await Todo.getTodos();
   if (request.accepts("html")) {
     response.render("index", {
