@@ -25,12 +25,12 @@
                     </div>
                 </form>
                 <div>
-
-
-                    <h5 class="py-2">Overdue<span class="bg-gray-100 text-gray-800 text-sm font-small mr-2 px-2.5 py-0.5 rounded dark:bg-gray-200 dark:text-gray-900 justify-center items-center items" id="count-overdue">
+                  <div style="display:flex; align-items:baseline;">
+                    <h5>Overdue</h5>
+                    <span class="bg-gray-100 text-gray-800 text-sm font-small mr-2 px-2.5 py-0.5 rounded dark:bg-gray-200 dark:text-gray-900 justify-center items-center items" id="count-overdue">
                           <%= overdueItems.length %>
                         </span>
-                      </h5>
+                  </div>
                       <ul class="list-none">
                         <% for(var i=0; i< overdueItems.length; i++) { %>
                         <li class="Todo-Item">
@@ -49,10 +49,12 @@
                         <% } %>
                     </ul>
 
-                    <h5>Due Today<span class="bg-gray-100 text-gray-800 text-sm font-small mr-2 px-2.5 py-0.5 rounded dark:bg-gray-200 dark:text-gray-900 justify-center items-center items"
+                  <div style="display:flex; align-items:baseline;">
+                    <h5>Due Today</h5>
+                    <span class="bg-gray-100 text-gray-800 text-sm font-small mr-2 px-2.5 py-0.5 rounded dark:bg-gray-200 dark:text-gray-900 justify-center items-center items"
                           id="count-due-today"><%= dueTodayItems.length %>
                         </span>
-                    </h5>
+                  </div>  
                     <ul class="list-none">
                         <% for(var i=0; i< dueTodayItems.length; i++) { %>
                         <li class="Todo-Item">
@@ -71,11 +73,12 @@
                         <% } %>
                       </ul>
 
-
-                      <h5>Due Later<span class="bg-gray-100 text-gray-800 text-sm font-small mr-2 px-2.5 py-0.5 rounded dark:bg-gray-200 dark:text-gray-900 justify-center items-center items"
+                    <div style="display:flex; align-items:baseline;">
+                      <h5>Due Later</h5>
+                      <span class="bg-gray-100 text-gray-800 text-sm font-small mr-2 px-2.5 py-0.5 rounded dark:bg-gray-200 dark:text-gray-900 justify-center items-center items"
                           id="count-due-later"> <%= dueLaterItems.length %>
                         </span>
-                      </h5>
+                    </div> 
                       <ul class="list-none">
                         <% for(var i=0; i< dueLaterItems.length; i++) { %>
                         <li class="Todo-Item">
