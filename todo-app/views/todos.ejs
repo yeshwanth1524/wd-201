@@ -1,29 +1,20 @@
 <html>
   <head>
-    <title>Todo App</title>
+    <title>Todo-App</title>
   </head>
 
   <body>
     <%- include('header') %>
     <h2>Todo List</h2>
     <table>
-      <thead>
-        <tr>
-          <th>Title</th>
-          <th>Due Date</th>
-          <th>Completed</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% todos.forEach(function(todo) { %>
-        <tr>
-          <td><%= todo.title %></td>
-          <td><%= todo.dueDate %></td>
-          <td><%= todo.completed %></td>
-        </tr>
-        <% }); %>
-      </tbody>
-    </table>
+      <% for( var i=0 ; i<allTodos.length; i++) { %>
+          <tr>
+              <td>
+                  <%= allTodos[i].title %>
+              </td>
+          </tr>
+      <% } %>         
+  </table>
 
     <%- include('footer') %>
   </body>
