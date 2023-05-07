@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 const express = require("express");
-var csrf = require("tiny-csrf");
+var csrf = require("csurf");
+// var csrf = require("tiny-csrf");
 const app = express();
 const { Todo } = require("./models");
 const bodyParser = require("body-parser");
@@ -9,7 +10,8 @@ const path = require("path");
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser("shh! some secret string"));
-app.use(csrf("this_should_be_32_character_long", ["POST", "PUT", "DELETE"]));
+app.use(csrf({ cookie: true}));
+// app.use(csrf("this_should_be_32_character_long", ["POST", "PUT", "DELETE"]));
 
 app.set("view engine", "ejs");
 
@@ -34,8 +36,7 @@ app.get("/", async (request, response) => {
       overdue,
       dueToday,
       dueLater,
-      completedItems,
-      allTodos
+      completedItems
     });
   }
 });
@@ -59,15 +60,15 @@ app.use(express.static(path.join(__dirname, "public")));
 //   response.send("Hello World");
 // });
 
-app.get("/todos", async function (_request, response) {
-  try {
-    const todos = await Todo.findAll();
-    response.send(todos);
-  } catch (error) {
-    console.log(error);
-    return response.status(422).json(error);
-  }
-});
+// app.get("/todos", async function (_request, response) {
+//   try {
+//     const todos = await Todo.findAll();
+//     response.send(todos);
+//   } catch (error) {
+//     console.log(error);
+//     return response.status(422).json(error);
+//   }
+// });
 
 app.get("/todos/:id", async function (request, response) {
   try {
@@ -112,13 +113,9 @@ app.put("/todos/:id", async function (request, response) {
 
 app.delete("/todos/:id", async function (request, response) {
   console.log("Delete a Todo with ID: ", request.params.id);
-  try {
-    const todo = await Todo.remove(request.params.id);
-    if (todo) {
-      return response.json({ success: true });
-    } else {
-      return response.json({ success: false });
-    }
+  try{
+    await Todo.remove(request.params.id);
+    return response.json(true);
   } catch (error) {
     console.log(error);
     response.status(422).json(error);
