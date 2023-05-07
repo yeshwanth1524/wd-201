@@ -1,6 +1,7 @@
 <html>
     <head lang="en">
         <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="csrf-token" content="<%= csrfToken %>" />
         <script src="https://cdn.tailwindcss.com"></script>    
@@ -10,11 +11,13 @@
             .querySelector('meta[name="csrf-token"]')
             .getAttribute("content");
           function updateTodo(id) {
-            fetch(`/todos/${id}/markAsCompleted`, {
+            const bool = document.querySelector(`#todo-checkbox-${id}`).checked
+            fetch(`/todos/${id}`, {
             method: "put",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               _csrf: token,
+              completed: bool
             }),
           })
           .then((res) => {
@@ -29,7 +32,7 @@
             method: "delete",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-            _csrf: token,
+              _csrf: token,
             }),
           })
           .then((res) => {
@@ -38,7 +41,7 @@
             }
           })
           .catch((err) => console.error(err));
-      }
+        }
         </script>
         <title>To-Do Manager</title>
     </head>
@@ -46,20 +49,34 @@
         <div class="grid grid-cols-6">
             <div class="col-start-3 col-span-2">
                 <%- include('header.ejs') %>
-                <form action="/todos" method="post">
+                <form id="todoForm" action="/todos" method="post">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>"/>
-                    <div class="flex gap-2 py-4">
-                        <div class="flex-auto">
-                            <input type="text" name="title" placeholder="What's next?" class="border border-gray-300 rounded text-gray-900 w-full p-2 text-sm" required/>
-                        </div>
-                        <div class="flex-auto">
-                            <input type="date" name="dueDate" class="border border-gray-300 rounded text-gray-900 w-full p-2 text-sm leading-4"/>
-                        </div>
-                        <div class="flex-none">
-                            <button type="submit" class="bg-green-600 text-white px-5 py-1.5 rounded font-medium mr-2 mb">Add</button>
-                        </div>
+                  <div class="flex gap-2 py-4">
+                    <div class="flex-auto">
+                      <input id="titleInput" type="text" name="title" placeholder="What's next?" class="border border-gray-300 rounded text-gray-900 w-full p-2 text-sm" required/>
                     </div>
+                    <div class="flex-auto">
+                      <input id="dueDateInput" type="date" name="dueDate" class="border border-gray-300 rounded text-gray-900 w-full p-2 text-sm leading-4 required"/>
+                    </div>
+                    <div class="flex-none">
+                      <button id="addButton" type="submit" class="bg-green-600 text-white px-5 py-1.5 rounded font-medium mr-2 mb">Add</button>
+                    </div>
+                  </div>
                 </form>
+                
+                <script>
+                  const form = document.getElementById('todoForm');
+                  const titleInput = document.getElementById('titleInput');
+                  const dueDateInput = document.getElementById('dueDateInput');
+                
+                  form.addEventListener('submit', (event) => {
+                    // Prevent form submission if title or due date are empty
+                    if (titleInput.value.trim() === '' || dueDateInput.value.trim() === '') {
+                      event.preventDefault();
+                      alert('Please enter a title and a due date.');
+                    }
+                  });
+                </script>
                   <div>
                     <%- include('todos.ejs', {title: "Overdue", data: overdue}) %> <%-
                     include('todos.ejs', {title: "Due Today", data: dueToday}) %> <%-
