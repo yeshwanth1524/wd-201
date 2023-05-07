@@ -17,8 +17,8 @@ module.exports = (sequelize, DataTypes) => {
     static getTodos() {
       return this.findAll();
     }
-    setCompletionStatus(complete) {
-      return this.update({ completed: !complete });
+    setCompletionStatus(completed) {
+      return this.update({ completed});
     }
     // markAsCompleted() {
     //   return this.update({ completed: true });
