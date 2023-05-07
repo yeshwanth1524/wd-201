@@ -17,12 +17,31 @@ module.exports = (sequelize, DataTypes) => {
     static getTodos() {
       return this.findAll();
     }
-    markAsCompleted() {
-      return this.update({ completed: true });
+    setCompletionStatus(complete) {
+      return this.update({ completed: !complete });
     }
+    // markAsCompleted() {
+    //   return this.update({ completed: true });
+    // }
     deleteTodo() {
       return this.destroy();
     }
+
+    static completedItems() {
+      return Todo.findAll({
+        where: {
+          completed: true,
+        },
+      });
+    }
+    static async remove(id) {
+      return this.destroy({
+        where: {
+          id,
+        },
+      });
+    }
+
     static async overdue() {
       const tasks = await Todo.findAll({
         where: {
@@ -34,7 +53,7 @@ module.exports = (sequelize, DataTypes) => {
       });
       return tasks;
     }
-  
+
     static async dueToday() {
       const tasks = await Todo.findAll({
         where: {
@@ -46,7 +65,7 @@ module.exports = (sequelize, DataTypes) => {
       });
       return tasks;
     }
-  
+
     static async dueLater() {
       const tasks = await Todo.findAll({
         where: {
@@ -59,6 +78,7 @@ module.exports = (sequelize, DataTypes) => {
       return tasks;
     }
   }
+
   Todo.init(
     {
       title: DataTypes.STRING,
