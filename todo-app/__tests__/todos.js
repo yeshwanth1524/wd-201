@@ -28,7 +28,7 @@ describe("Todo Application", function () {
   });
 
   test("Creates a todo and responds with json at /todos POST endpoint", async () => {
-    const res = await agent.get("/");
+    const res = await agent.get("/").send();
     const csrfToken = extractCsrfToken(res);
     const response = await agent.post("/todos").send({
       title: "Buy pc",
@@ -70,6 +70,8 @@ describe("Todo Application", function () {
   test("Marks a todo as incomplete", async () => {
     let res = await agent.get("/");
     let csrfToken = extractCsrfToken(res);
+
+    // Create a todo with completed: true
     await agent.post("/todos").send({
       title: "Buy pc",
       dueDate: new Date().toISOString(),
@@ -77,20 +79,21 @@ describe("Todo Application", function () {
       _csrf: csrfToken,
     });
 
-    const parsedResponse = await agent .get("/") .set("Accept", "application/json");
-    const getparsed = JSON.parse(parsedResponse.text);
-    const dueTodayCount = getparsed.dueToday.length;
-    const latestTodo = getparsed.dueToday[dueTodayCount - 1]; 
-
+    // Get the latest todo and mark it as incomplete
     res = await agent.get("/");
     csrfToken = extractCsrfToken(res);
-
+    const parsedResponse = await agent.get("/").set("Accept", "application/json");
+    const getparsed = JSON.parse(parsedResponse.text);
+    const dueTodayCount = getparsed.dueToday.length;
+    const latestTodo = getparsed.dueToday[dueTodayCount - 1];
     const markIncompleteResponse = await agent
       .put(`/todos/${latestTodo.id}`)
       .send({
         _csrf: csrfToken,
         completed: false,
       });
+
+    // Assert that the todo's completed status has been changed to false
     const parsedUpdateResponse = JSON.parse(markIncompleteResponse.text);
     expect(parsedUpdateResponse.completed).toBe(false);
   });
@@ -115,7 +118,7 @@ describe("Todo Application", function () {
 
   test("Deletes a todo with the given ID if it exists and sends a boolean response", async () => {
     // Create a new todo
-    let res = await agent.get("/");
+    let res = await agent.get("/").send();
     let csrfToken = extractCsrfToken(res);
     await agent.post("/todos").send({
       title: "Buy pc",
@@ -124,10 +127,10 @@ describe("Todo Application", function () {
     });
   
     const parsedResponse = await agent .get("/") .set("Accept", "application/json");
-    const getparsed = JSON.parse(parsedResponse.text);
-    expect(getparsed.dueToday).toBeDefined();
-    const dueTodayCount = getparsed.dueToday.length;
-    const presentTodo = getparsed.dueToday[dueTodayCount - 1];
+    const parsedID = JSON.parse(parsedResponse.text);
+    expect(parsedID.dueToday).toBeDefined();
+    const dueTodayCount = parsedID.dueToday.length;
+    const presentTodo = parsedID.dueToday[dueTodayCount - 1];
 
     res = await agent.get("/");
     csrfToken = extractCsrfToken(res);
