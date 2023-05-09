@@ -11,19 +11,21 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
 
-    static addTodo({ title, dueDate, completed = false }) {
-      return this.create({ title: title, dueDate: dueDate, completed: completed });
+    static addTodo(todo) {
+      return this.create({ title: todo.title, dueDate: todo.dueDate, completed: false });
     }
     
     static getTodos() {
       return this.findAll();
     }
-    setCompletionStatus(completed) {
-      return this.update({ completed});
+    setCompletionStatus(bool) {
+      return this.update({ completed: bool});
     }
-    // markAsCompleted() {
-    //   return this.update({ completed: true });
-    // }
+
+    markAsCompleted() {
+      return this.update({ completed: true });
+    }
+
     deleteTodo() {
       return this.destroy();
     }
@@ -35,6 +37,7 @@ module.exports = (sequelize, DataTypes) => {
         },
       });
     }
+
     static async remove(id) {
       return this.destroy({
         where: {
@@ -44,39 +47,44 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     static async overdue() {
-      const tasks = await Todo.findAll({
+      const currentDate = new Date();
+      return this.findAll({
         where: {
           dueDate: {
-            [Op.lt]: new Date(),
+            [Op.lt]: currentDate,
           },
+          completed: false,
         },
-        order: [["id", "ASC"]],
       });
-      return tasks;
     }
-
+    
     static async dueToday() {
-      const tasks = await Todo.findAll({
+      const currentDate = new Date();
+      const today = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      return this.findAll({
         where: {
           dueDate: {
-            [Op.eq]: new Date(),
+            [Op.gte]: today,
+            [Op.lt]: tomorrow,
           },
+          completed: false,
         },
-        order: [["id", "ASC"]],
       });
-      return tasks;
     }
-
+    
     static async dueLater() {
-      const tasks = await Todo.findAll({
+      const currentDate = new Date();
+      const today = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+      return this.findAll({
         where: {
           dueDate: {
-            [Op.gt]: new Date(),
+            [Op.gte]: today,
           },
+          completed: false,
         },
-        order: [["id", "ASC"]],
       });
-      return tasks;
     }
   }
 
