@@ -75,17 +75,16 @@ module.exports = (sequelize, DataTypes) => {
     }
     
     static async dueLater() {
-      const currentDate = new Date();
-      const today = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
       return this.findAll({
         where: {
           dueDate: {
-            [Op.gte]: today,
+            [Op.gt]: new Date(),
           },
-          completed: false,
+          completed:false,
         },
-      });
+      })
     }
+
   }
 
   Todo.init(
