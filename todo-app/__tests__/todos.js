@@ -68,34 +68,49 @@ describe("Todo Application", function () {
   }); 
     
   test("Marks a todo as incomplete", async () => {
+    // Create a todo
     let res = await agent.get("/");
     let csrfToken = extractCsrfToken(res);
-
-    // Create a todo with completed: true
+  
     await agent.post("/todos").send({
       title: "Buy pc",
       dueDate: new Date().toISOString(),
-      completed: false,
       _csrf: csrfToken,
     });
-
-    // Get the latest todo and mark it as incomplete
+  
+    // Mark the todo as complete and assert it has changed to true
     res = await agent.get("/");
     csrfToken = extractCsrfToken(res);
     const parsedResponse = await agent.get("/").set("Accept", "application/json");
     const getparsed = JSON.parse(parsedResponse.text);
     const dueTodayCount = getparsed.dueToday.length;
     const latestTodo = getparsed.dueToday[dueTodayCount - 1];
-    const markIncompleteResponse = await agent
+    const markCompleteResponse = await agent
       .put(`/todos/${latestTodo.id}`)
+      .send({
+        _csrf: csrfToken,
+        completed: true,
+      });
+  
+    const parsedUpdateResponse = JSON.parse(markCompleteResponse.text);
+    expect(parsedUpdateResponse.completed).toBe(true);
+  
+    // Mark the todo as incomplete and assert it has changed to false
+    res = await agent.get("/");
+    csrfToken = extractCsrfToken(res);
+    const parsedResponse2 = await agent.get("/").set("Accept", "application/json");
+    const getparsed2 = JSON.parse(parsedResponse2.text);
+    const dueTodayCount2 = getparsed2.dueToday.length;
+    const latestTodo2 = getparsed2.dueToday[dueTodayCount2 - 1];
+    const markIncompleteResponse = await agent
+      .put(`/todos/${latestTodo2.id}`)
       .send({
         _csrf: csrfToken,
         completed: false,
       });
-
-    // Assert that the todo's completed status has been changed to false
-    const parsedUpdateResponse = JSON.parse(markIncompleteResponse.text);
-    expect(parsedUpdateResponse.completed).toBe(false);
+  
+    const parsedUpdateResponse2 = JSON.parse(markIncompleteResponse.text);
+    expect(parsedUpdateResponse2.completed).toBe(false);
   });
 
   test("Deletes a todo with the given ID if it exists and sends a boolean response", async () => {
