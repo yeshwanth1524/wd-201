@@ -115,26 +115,7 @@ app.get("/signup", (request, response) => {
 })
 
 app.post("/users", async (request,response) => {
-  const fname=request.body.firstname;
-  const mail=request.body.email;
-  const pwd=request.body.password;
- 
-  if (!fname) {
-    request.flash("error", "Make sure you enter your first name");
-    return response.redirect("/signup");
-  }
-  if (!mail) {
-    request.flash("error", "Make sure you enter your Email-id");
-    return response.redirect("/signup");
-  }
-  if (!pwd) {
-    request.flash("error", "Make sure you enter a valid password");
-    return response.redirect("/signup");
-  }
-  if (pwd < 8) {
-    request.flash("error", "Password length should be atleast 8 characters long");
-    return response.redirect("/signup");
-  }
+  
   const hashedpwd = await bcrypt.hash(request.body.password, saltRounds)
   try {
     const user = await User.create({
@@ -184,11 +165,6 @@ app.get("/todos/:id", connectEnsureLogin.ensureLoggedIn(), async function (reque
 });
 
 app.post("/todos", connectEnsureLogin.ensureLoggedIn(), async function (request, response) {
-  const titleName=request.body.title;
-  if (titleName.length<5) {
-    request.flash("error", "Make sure title should be more than 5 letters");
-    return response.redirect("/todos");
-  }
   try {
     await Todo.addTodo({
       title: request.body.title,
