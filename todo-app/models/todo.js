@@ -8,57 +8,64 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
+      Todo.belongsTo(models.User, {
+        foreignKey: 'userId'
+      })
       // define association here
     }
 
-    static addTodo(todo) {
-      return this.create({ title: todo.title, dueDate: todo.dueDate, completed: false });
+    static addTodo(title, dueDate, userId) {
+      return this.create({ title: title, dueDate: dueDate, completed: false, userId });
     }
     
-    static getTodos() {
-      return this.findAll();
+    static async getTodo() {
+      return await this.findAll();
     }
+
     setCompletionStatus(bool) {
       return this.update({ completed: bool});
     }
 
-    markAsCompleted() {
-      return this.update({ completed: true });
-    }
+    // markAsCompleted() {
+    //   return this.update({ completed: true });
+    // }
 
-    deleteTodo() {
-      return this.destroy();
-    }
+    // deleteTodo() {
+    //   return this.destroy();
+    // }
 
-    static completedItems() {
-      return Todo.findAll({
+    static completedItems(userId) {
+      return this.findAll({
         where: {
           completed: true,
+          userId
         },
       });
     }
 
-    static async remove(id) {
+    static async remove(id, userId) {
       return this.destroy({
         where: {
           id,
+          userId
         },
       });
     }
 
-    static async overdue() {
+    static async overdue(userId) {
       const currentDate = new Date();
       return this.findAll({
         where: {
           dueDate: {
             [Op.lt]: currentDate,
           },
+          userId,
           completed: false,
         },
       });
     }
     
-    static async dueToday() {
+    static async dueToday(userId) {
       const currentDate = new Date();
       const today = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
       const tomorrow = new Date(today);
@@ -69,17 +76,19 @@ module.exports = (sequelize, DataTypes) => {
             [Op.gte]: today,
             [Op.lt]: tomorrow,
           },
+          userId,
           completed: false,
         },
       });
     }
     
-    static async dueLater() {
+    static async dueLater(userId) {
       return this.findAll({
         where: {
           dueDate: {
             [Op.gt]: new Date(),
           },
+          userId,
           completed:false,
         },
       })
@@ -89,10 +98,19 @@ module.exports = (sequelize, DataTypes) => {
 
   Todo.init(
     {
-      title: DataTypes.STRING,
-      dueDate: DataTypes.DATEONLY,
-      completed: DataTypes.BOOLEAN,
+      title: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      dueDate:{
+        type: DataTypes.DATEONLY,
+        allowNull: false,
+      }, 
+      completed: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
     },
+  },
     {
       sequelize,
       modelName: "Todo",
