@@ -1,5 +1,6 @@
 "use strict";
-const { Model, Op } = require("sequelize");
+const { Model} = require("sequelize");
+const { Op } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Todo extends Model {
     /**
@@ -34,8 +35,8 @@ module.exports = (sequelize, DataTypes) => {
     //   return this.destroy();
     // }
 
-    static completedItems(userId) {
-      return this.findAll({
+    static async completedItems(userId) {
+      return await this.findAll({
         where: {
           completed: true,
           userId
@@ -44,7 +45,7 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     static async remove(id, userId) {
-      return this.destroy({
+      return await this.destroy({
         where: {
           id,
           userId
@@ -54,7 +55,7 @@ module.exports = (sequelize, DataTypes) => {
 
     static async overdue(userId) {
       const currentDate = new Date();
-      return this.findAll({
+      return await this.findAll({
         where: {
           dueDate: {
             [Op.lt]: currentDate,
@@ -62,6 +63,7 @@ module.exports = (sequelize, DataTypes) => {
           userId,
           completed: false,
         },
+        order: [["id", "ASC"]],
       });
     }
     
@@ -70,7 +72,7 @@ module.exports = (sequelize, DataTypes) => {
       const today = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
       const tomorrow = new Date(today);
       tomorrow.setDate(tomorrow.getDate() + 1);
-      return this.findAll({
+      return await this.findAll({
         where: {
           dueDate: {
             [Op.gte]: today,
@@ -79,11 +81,12 @@ module.exports = (sequelize, DataTypes) => {
           userId,
           completed: false,
         },
+        order: [["id", "ASC"]],
       });
     }
     
     static async dueLater(userId) {
-      return this.findAll({
+      return await this.findAll({
         where: {
           dueDate: {
             [Op.gt]: new Date(),
@@ -91,26 +94,17 @@ module.exports = (sequelize, DataTypes) => {
           userId,
           completed:false,
         },
+        order: [["id", "ASC"]],
       })
     }
-
   }
 
   Todo.init(
     {
-      title: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      dueDate:{
-        type: DataTypes.DATEONLY,
-        allowNull: false,
-      }, 
-      completed: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
+      title: DataTypes.STRING,
+      dueDate: DataTypes.DATEONLY,
+      completed: DataTypes.BOOLEAN,
     },
-  },
     {
       sequelize,
       modelName: "Todo",
