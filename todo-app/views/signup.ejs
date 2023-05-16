@@ -11,7 +11,7 @@
         </title>
     </head>
     <body>
-        <div class="grid grid-cols-6">
+        <div class="grid grid-cols-6 grid-rows-6 gap-2">
             <div class="col-start-3 col-span-2">
                 <%- include('header.ejs') %> 
                 <h6 class="py-4">Signup as a new user</h6>
@@ -22,28 +22,30 @@
                         <% } %>
                       <% } %>
                 </div>
-                <form action ="/users" method="post">
+                <form action="/users" method="post">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                    <div class="py-3">
-                        <label for="firstName">First Name:</label>
-                        <input type="text" name="firstName" class="border border-gray-300 text-gray-900 rounded p-2 w-full>
+                    <div class="form-container mx-3 px-4 gap-2">
+                      <div class="form-field my-3">
+                        <label class="text-sm">First Name</label>
+                        <input class="rounded border-2 text-sm p-2 w-full" type="text" name="FirstName" placeholder="First Name">
+                      </div>
+                      <div class="form-field my-3">
+                        <label class="text-sm">Last Name</label>
+                        <input class="rounded border-2 text-sm p-2 w-full" type="text" name="LastName" placeholder="Last Name">
+                      </div>
+                      <div class="form-field my-3">
+                        <label class="text-sm">Email</label>
+                        <input class="rounded border-2 text-sm p-2 w-full" type="email" name="Email" placeholder="Email">
+                      </div>
+                      <div class="form-field my-3">
+                        <label class="text-sm">Password</label>
+                        <input class="rounded border-2 text-sm p-2 w-full" type="password" name="password" placeholder="Password">
+                      </div>
+                      <div class="form-field my-3">
+                        <button class="rounded px-4 my-3 bg-blue-500 text-white border-2 p-2 hover:bg-blue-800" type="submit">Sign Up</button>
+                      </div>
                     </div>
-                    <div class="py-3">
-                        <label for="lastName">Last Name:</label>
-                        <input type="text" name="lastName" class="border border-gray-300 text-gray-900 rounded p-2 w-full>
-                    </div>
-                    <div class="py-3">
-                        <label for="email">Email:</label>
-                        <input type="email" name="email" class="border border-gray-300 text-gray-900 rounded p-2 w-full>
-                    </div>
-                    <div class="py-3">
-                        <label for="password">password:</label>
-                        <input type="password" name="password" class="border border-gray-300 text-gray-900 rounded p-2 w-full>
-                    </div>
-                    <div class="py-3">
-                        <button type="submit" class="text-white bg-green-600 hover:bg-green-800 font-medium rounded px-5 py-2">Sign up</button>
-                    </div>
-                </form>
+                  </form>
             </div>
         </div>
     </body>
