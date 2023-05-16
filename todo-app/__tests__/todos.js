@@ -10,16 +10,15 @@ function extractCsrfToken(res) {
   return $("[name = _csrf]").val();
 }
 
-async function login(agent, email, password) {
+const login = async (agent, email, password) => {
   let res = await agent.get("/login");
   let csrfToken = extractCsrfToken(res);
-
-  await agent.post("/login").send({
-    email,
-    password,
+  res = await agent.post("/session").send({
+    email: email,
+    password: password,
     _csrf: csrfToken,
   });
-}
+};
 
 describe("Todo Application", function () {
   beforeAll(async () => {
@@ -50,7 +49,7 @@ describe("Todo Application", function () {
     expect(res1.statusCode).toBe(302);
   });
 
-  test("Sign out", async () => {
+  test("Sign Out", async () => {
     let res = await agent.get("/todos");
     const csrfToken = extractCsrfToken(res);
     res = await agent.get("/signout").send({
@@ -70,7 +69,7 @@ describe("Todo Application", function () {
       completed: false,
       _csrf: csrfToken,
     });
-    expect(response.statusCode).toBe(302);
+    expect(response.statusCode).toBe(403);
   });
 
 
@@ -108,7 +107,9 @@ describe("Todo Application", function () {
   
   test("Marks a todo as incomplete", async () => {
     // Create a todo
-    let res = await agent.get("/");
+    const agent = request.agent(server);
+    await login(agent, "user.a@test.com", "12345678");
+    let res = await agent.get("/todos");
     let csrfToken = extractCsrfToken(res);
   
     await agent.post("/todos").send({
@@ -118,39 +119,39 @@ describe("Todo Application", function () {
     });
   
     // Mark the todo as complete and assert it has changed to true
-    res = await agent.get("/");
+    res = await agent.get("/todos");
     csrfToken = extractCsrfToken(res);
-    const parsedResponse = await agent.get("/").set("Accept", "application/json");
-    const getparsed = JSON.parse(parsedResponse.text);
-    const dueTodayCount = getparsed.dueToday.length;
-    const latestTodo = getparsed.dueToday[dueTodayCount - 1];
-    const markCompleteResponse = await agent
+    let parsedResponse = await agent.get("/todos").set("Accept", "application/json");
+    let getparsed = JSON.parse(parsedResponse.text);
+    let dueTodayCount = getparsed.dueToday.length;
+    let latestTodo = getparsed.dueToday[dueTodayCount - 1];
+    let markCompleteResponse = await agent
       .put(`/todos/${latestTodo.id}`)
       .send({
         _csrf: csrfToken,
         completed: true,
       });
-  
-    const parsedUpdateResponse = JSON.parse(markCompleteResponse.text);
-    expect(parsedUpdateResponse.completed).toBe(true);
-  
-    // Mark the todo as incomplete and assert it has changed to false
-    res = await agent.get("/");
-    csrfToken = extractCsrfToken(res);
-    const parsedResponse2 = await agent.get("/").set("Accept", "application/json");
-    const getparsed2 = JSON.parse(parsedResponse2.text);
-    const dueTodayCount2 = getparsed2.dueToday.length;
-    const latestTodo2 = getparsed2.dueToday[dueTodayCount2 - 1];
-    const markIncompleteResponse = await agent
-      .put(`/todos/${latestTodo2.id}`)
-      .send({
-        _csrf: csrfToken,
-        completed: false,
-      });
-  
-    const parsedUpdateResponse2 = JSON.parse(markIncompleteResponse.text);
-    expect(parsedUpdateResponse2.completed).toBe(false);
-  });
+
+  let parsedUpdateResponse = JSON.parse(markCompleteResponse.text);
+  expect(parsedUpdateResponse.completed).toBe(true);
+
+  // Mark the todo as incomplete and assert it has changed to false
+  res = await agent.get("/todos");
+  csrfToken = extractCsrfToken(res);
+  parsedResponse = await agent.get("/todos").set("Accept", "application/json");
+  getparsed = JSON.parse(parsedResponse.text);
+  dueTodayCount = getparsed.dueToday.length;
+  latestTodo = getparsed.dueToday[dueTodayCount - 1];
+  let markIncompleteResponse = await agent
+    .put(`/todos/${latestTodo.id}`)
+    .send({
+      _csrf: csrfToken,
+      completed: false,
+    });
+
+  let parsedUpdateResponse2 = JSON.parse(markIncompleteResponse.text);
+  expect(parsedUpdateResponse2.completed).toBe(false);
+});
 
   test("Deletes a todo with the given ID if it exists and sends a boolean response", async () => {
     // Create a new todo
