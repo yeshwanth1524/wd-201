@@ -181,7 +181,7 @@ app.post("/todos", connectEnsureLogin.ensureLoggedIn(), async function (request,
 app.put("/todos/:id", connectEnsureLogin.ensureLoggedIn(), async function (request, response) {
   const todo = await Todo.findByPk(request.params.id);
   try {
-    const updatedTodo = await todo.setCompletionStatus(request.body.completedItems);
+    const updatedTodo = await todo.setCompletionStatus(request.body.completed);
     return response.json(updatedTodo);
   } catch (error) {
     console.log(error);
