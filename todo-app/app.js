@@ -21,15 +21,15 @@ const LocalStrategy = require('passport-local');
 
 const bcrypt = require('bcrypt');
 const flash = require("connect-flash");
+const { body, validationResult } = require("express-validator");
 app.set("views", path.join(__dirname, "views"));
-app.use(flash());
 const saltRounds = 10;
 
 app.set("view engine", "ejs");
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use(session({
-  secret: "my-secret-key-123456",
+  secret: "mYsCrtkEy-@yEktrCsYm",
   cookie: {
     maxAge: 24*60*60*1000 //24 hrs
   }
@@ -37,6 +37,7 @@ app.use(session({
 
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(flash());
 
 app.use(function(request, response, next) {
   response.locals.messages = request.flash();
@@ -45,19 +46,22 @@ app.use(function(request, response, next) {
 
 passport.use(new LocalStrategy({
   usernameField: 'email',
-  passwordField: 'password'
+  passwordField: 'password',
 }, (username, password, done) => {
-  User.findOne({ where: {email: username}})
-   .then(async(user) => {
-      const result = await bcrypt.compare(password, user.password)
-      if(result){
+  User.findOne({ where: { email: username } })
+    .then(async (user) => {
+      if (!user) {
+        return done(null, false, { message: 'Invalid email' });
+      }
+      const result = await bcrypt.compare(password, user.password);
+      if (result) {
         return done(null, user);
       } else {
-        return done("Invalid password");
-      }    
-   }).catch((error) => {
-    return (error)
-   })
+        return done(null, false, { message: 'Invalid password' });
+      }
+    }).catch((error) => {
+      return done(error);
+    });
 }));
 
 passport.serializeUser((user,done) => {
@@ -96,7 +100,6 @@ app.get("/todos", connectEnsureLogin.ensureLoggedIn(), async (request, response)
       dueToday,
       dueLater,
       completedItems,
-      
       csrfToken: request.csrfToken(),
     });
   } else {
@@ -114,28 +117,48 @@ app.get("/signup", (request, response) => {
   response.render("signup", {title: "Signup", csrfToken: request.csrfToken()})
 })
 
-app.post("/users", async (request,response) => {
-  
-  const hashedpwd = await bcrypt.hash(request.body.password, saltRounds)
-  try {
-    const user = await User.create({
-    firstname: request.body.firstname,
-    lastname: request.body.lastname,
-    email: request.body.email,
-    password: hashedpwd
-  });
-  request.login(user, (err) => {
-    if(err) {
-      console.log(err);
-      response.redirect("/login");
+app.post(
+  "/users",
+  [
+    body("firstname").notEmpty().withMessage("First name is required"),
+    body("email").notEmpty().withMessage("Email is required").isEmail().withMessage("Invalid email address"),
+    body("password").notEmpty().withMessage("Password is required"),
+  ],
+  async (request, response) => {
+    try {
+      const errors = validationResult(request);
+
+      if (!errors.isEmpty()) {
+        const errorMessages = errors.array().map((error) => error.msg);
+        request.flash("error", errorMessages);
+        return response.redirect("/signup");
+      }
+
+      const hashedpwd = await bcrypt.hash(request.body.password, saltRounds);
+
+      const user = await User.create({
+        firstname: request.body.firstname,
+        lastname: request.body.lastname,
+        email: request.body.email,
+        password: hashedpwd,
+      });
+
+      request.login(user, (err) => {
+        if (err) {
+          console.log(err);
+          request.flash("error", "An error occurred during login.");
+          return response.redirect("/login");
+        }
+        response.redirect("/todos");
+      });
+    } catch (error) {
+      console.log(error);
+      request.flash("error", error.message);
+      return response.redirect("/signup");
     }
-    response.redirect("/todos");
-  });
-  } catch (error) {
-    request.flash("error", error.message);
-    return response.redirect("/signup");
   }
-})
+);
+
 
 app.get("/login", (request, response) => {
   response.render("login", { title: "login", csrfToken: request.csrfToken()});
@@ -164,12 +187,22 @@ app.get("/todos/:id", connectEnsureLogin.ensureLoggedIn(), async function (reque
   }
 });
 
-app.post("/todos", connectEnsureLogin.ensureLoggedIn(), async function (request, response) {
+app.post("/todos", connectEnsureLogin.ensureLoggedIn(), [
+  body("title").trim().notEmpty().withMessage("Title is required"),
+  body("dueDate").notEmpty().withMessage("Due date is required"),
+], async function (request, response) {
+  const errors = validationResult(request);
+  if (!errors.isEmpty()) {
+    const errorMessages = errors.array().map((error) => error.msg);
+    request.flash("error", errorMessages);
+    return response.redirect("/todos");
+  }
+
   try {
     await Todo.addTodo({
       title: request.body.title,
       dueDate: request.body.dueDate,
-      userId: request.user.id
+      userId: request.user.id,
     });
     return response.redirect("/todos");
   } catch (error) {
@@ -191,8 +224,12 @@ app.put("/todos/:id", connectEnsureLogin.ensureLoggedIn(), async function (reque
 
 app.delete("/todos/:id", connectEnsureLogin.ensureLoggedIn(), async function (request, response) {
   console.log("Delete a Todo with ID: ", request.params.id);
-  try{
-    await Todo.remove(request.params.id);
+  try {
+    const todo = await Todo.findByPk(request.params.id);
+    if (!todo || todo.userId !== request.user.id) {
+      return response.status(404).json({ message: 'Todo not found' });
+    }
+    await todo.destroy();
     return response.json(true);
   } catch (error) {
     console.log(error);
