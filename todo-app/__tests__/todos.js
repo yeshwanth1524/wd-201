@@ -154,31 +154,32 @@ describe("Todo Application", function () {
 });
 
   test("Deletes a todo with the given ID if it exists and sends a boolean response", async () => {
-    // Create a new todo
     const agent = request.agent(server);
     await login(agent, "user.a@test.com", "12345678");
     let res = await agent.get("/todos");
     let csrfToken = extractCsrfToken(res);
     await agent.post("/todos").send({
-      title: "Buy pc",
+      title: "buy pc",
       dueDate: new Date().toISOString(),
       completed: false,
       _csrf: csrfToken,
     });
-  
-    const parsedResponse = await agent.get("/todos").set("Accept", "application/json");
-    const parsedID = JSON.parse(parsedResponse.text);
-    expect(parsedID.dueToday).toBeDefined();
-    const dueTodayCount = parsedID.dueToday.length;
-    const presentTodo = parsedID.dueToday[dueTodayCount - 1];
+
+    const parsedResponse1 = await agent
+      .get("/todos")
+      .set("Accept", "application/json");
+
+    const parsedGroupedResponse1 = JSON.parse(parsedResponse1.text);
+    const dueTodayCount = parsedGroupedResponse1.dueToday.length;
+    const latestTodo = parsedGroupedResponse1.dueToday[dueTodayCount - 1];
 
     res = await agent.get("/todos");
     csrfToken = extractCsrfToken(res);
-    const deleted = await agent.delete(`/todos/${presentTodo.id}`).send({
+    const deleteResponse1 = await agent.delete(`/todos/${latestTodo.id}`).send({
       _csrf: csrfToken,
     });
-    const DeletedResponse1 = JSON.parse(deleted.text);
-
-    expect(DeletedResponse1).toBe(true);
+    const DeleteResponse1 = JSON.parse(deleteResponse1.text);
+    expect(DeleteResponse1).toBe(true);
+    
   });
 });
