@@ -166,7 +166,7 @@ describe("Todo Application", function () {
       _csrf: csrfToken,
     });
   
-    const parsedResponse = await agent .get("/todos") .set("Accept", "application/json");
+    const parsedResponse = await agent.get("/todos").set("Accept", "application/json");
     const parsedID = JSON.parse(parsedResponse.text);
     expect(parsedID.dueToday).toBeDefined();
     const dueTodayCount = parsedID.dueToday.length;
