@@ -21,7 +21,6 @@ const LocalStrategy = require('passport-local');
 
 const bcrypt = require('bcrypt');
 const flash = require("connect-flash");
-const { body, validationResult } = require("express-validator");
 app.set("views", path.join(__dirname, "views"));
 const saltRounds = 10;
 
@@ -194,21 +193,18 @@ app.get("/todos/:id", connectEnsureLogin.ensureLoggedIn(), async function (reque
   }
 });
 
-app.post("/todos", connectEnsureLogin.ensureLoggedIn(), [
-  body("title").trim().notEmpty().withMessage("Title is required"),
-  body("dueDate").notEmpty().withMessage("Due date is required"),
-], async function (request, response) {
-  const errors = validationResult(request);
-  if (!errors.isEmpty()) {
-    const errorMessages = errors.array().map((error) => error.msg);
-    request.flash("error", errorMessages);
+app.post("/todos", connectEnsureLogin.ensureLoggedIn(), async function (request, response) {
+  const { title, dueDate } = request.body;
+  
+  if (!title || !dueDate) {
+    request.flash("error", "Title and Due date are required");
     return response.redirect("/todos");
   }
 
   try {
     await Todo.addTodo({
-      title: request.body.title,
-      dueDate: request.body.dueDate,
+      title: title.trim(),
+      dueDate,
       userId: request.user.id,
     });
     return response.redirect("/todos");
