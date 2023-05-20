@@ -117,47 +117,54 @@ app.get("/signup", (request, response) => {
   response.render("signup", {title: "Signup", csrfToken: request.csrfToken()})
 })
 
-app.post(
-  "/users",
-  [
-    body("firstname").notEmpty().withMessage("First name is required"),
-    body("email").notEmpty().withMessage("Email is required").isEmail().withMessage("Invalid email address"),
-    body("password").notEmpty().withMessage("Password is required"),
-  ],
-  async (request, response) => {
-    try {
-      const errors = validationResult(request);
 
-      if (!errors.isEmpty()) {
-        const errorMessages = errors.array().map((error) => error.msg);
-        request.flash("error", errorMessages);
-        return response.redirect("/signup");
-      }
+app.post("/users", async (request, response) => {
+  const { firstname, lastname, email, password } = request.body;
 
-      const hashedpwd = await bcrypt.hash(request.body.password, saltRounds);
+  const errors = [];
 
-      const user = await User.create({
-        firstname: request.body.firstname,
-        lastname: request.body.lastname,
-        email: request.body.email,
-        password: hashedpwd,
-      });
-
-      request.login(user, (err) => {
-        if (err) {
-          console.log(err);
-          request.flash("error", "An error occurred during login.");
-          return response.redirect("/login");
-        }
-        response.redirect("/todos");
-      });
-    } catch (error) {
-      console.log(error);
-      request.flash("error", error.message);
-      return response.redirect("/signup");
-    }
+  if (!firstname) {
+    errors.push("First name is required");
   }
-);
+
+  if (!email) {
+    errors.push("Email is required");
+  }
+
+  if (!password) {
+    errors.push("Password is required");
+  }
+
+  if (errors.length > 0) {
+    request.flash("error", errors);
+    return response.redirect("/signup");
+  }
+
+  try {
+    const hashedpwd = await bcrypt.hash(password, saltRounds);
+
+    const user = await User.create({
+      firstname,
+      lastname,
+      email,
+      password: hashedpwd,
+    });
+
+    request.login(user, (err) => {
+      if (err) {
+        console.log(err);
+        request.flash("error", "An error occurred during login.");
+        return response.redirect("/login");
+      }
+      response.redirect("/todos");
+    });
+  } catch (error) {
+    console.log(error);
+    request.flash("error", error.message);
+    return response.redirect("/signup");
+  }
+});
+
 
 
 app.get("/login", (request, response) => {
